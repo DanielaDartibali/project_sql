@@ -1,5 +1,6 @@
 project_sql
-SQL PROJECT This project demonstrates how to manage and manipulate data using SQL and SQLite within a Python environment. It covers essential CRUD (Create, Read, Update, Delete) operations as well as more advanced queries such as joins and aggregate functions.
+- SQL PROJECT
+   This project demonstrates how to manage and manipulate data using SQL and SQLite within a Python environment. It covers essential CRUD (Create, Read, Update, Delete) operations as well as more advanced queries such as joins and aggregate functions.
 
 - Project Structure Tables: alunos (Students): Contains student data including id, name, age, and course. clientes (Clients): Stores client information such as id, name, age, and balance. compras (Purchases): Records purchase details with fields for id, client_id (foreign key referencing clientes), product, and value.
 - Key Functionalities: Table Creation & Data Insertion: Creating tables and inserting records using SQL commands.
