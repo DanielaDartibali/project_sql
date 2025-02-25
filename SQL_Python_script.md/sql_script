@@ -1,0 +1,81 @@
+import sqlite3
+
+conexao = sqlite3.connect("banco")
+
+cursor = conexao.cursor ( )
+
+cursor.execute("CREATE TABLE alunos (id INT, nome VARCHAR(100), idade INT, curso VARCHAR(100))")
+
+cursor.execute("INSERT INTO alunos (id, nome, idade, curso) VALUES (1, 'Daniela', 21, 'Biomedicina')")
+cursor.execute("INSERT INTO alunos (id, nome, idade, curso) VALUES (2, 'Phelipe', 23, 'RH')")
+cursor.execute("INSERT INTO alunos (id, nome, idade, curso) VALUES (3, 'Marcio', 18, 'Tecnologia da Informação')")
+cursor.execute("INSERT INTO alunos (id, nome, idade, curso) VALUES (4, 'Maria de Fátima', 22, 'RH')")
+cursor.execute("INSERT INTO alunos (id, nome, idade, curso) VALUES (5, 'Gislenir', 29, 'Pedagogia')")
+
+dados = cursor.execute('SELECT * FROM alunos;')
+for alunos in dados:
+    print(alunos)
+
+
+alunos_maior20 = cursor.execute('SELECT nome, idade FROM alunos WHERE idade > 20;')
+for nome,idade in alunos_maior20:
+    print(nome, idade)
+
+aluno_RH = cursor.execute("SELECT nome, curso FROM alunos WHERE curso = 'RH' ORDER BY nome;")
+for alunos,curso in aluno_RH:
+    print(alunos, curso)
+
+
+total = cursor.execute("SELECT COUNT(*) FROM alunos;")
+for alunos in total:
+    print(alunos)
+
+cursor.execute("UPDATE alunos SET idade = 22 WHERE id = 2")
+
+cursor.execute("DELETE FROM alunos WHERE id = 4")
+
+cursor.execute("CREATE TABLE clientes (id INTEGER PRIMARY KEY, nome VARCHAR(100), idade INT, saldo FLOAT)")
+cursor.execute("INSERT INTO clientes (id, nome, idade, saldo) VALUES (1, 'Daniela', 21, 3896.0)")
+cursor.execute("INSERT INTO clientes (id, nome, idade, saldo) VALUES (2, 'João', 28, 10789.0)")
+cursor.execute("INSERT INTO clientes (id, nome, idade, saldo) VALUES (3, 'Gabriel', 22, 2895.0)")
+cursor.execute("INSERT INTO clientes (id, nome, idade, saldo) VALUES (4, 'Phelipe', 22, 8759.0)")
+cursor.execute("INSERT INTO clientes (id, nome, idade, saldo) VALUES (5, 'Gislenir', 29, 4357.0)")
+
+
+idade_maior_30 = cursor.execute('SELECT nome, idade FROM clientes WHERE idade > 30;').fetchall()
+if not idade_maior_30:
+    print("Nenhum cliente com idade superior a 30 anos.")
+else:
+    for nome, idade in idade_maior_30:
+        print(nome, idade)
+
+saldo_medio = cursor.execute("SELECT AVG(saldo) FROM clientes;").fetchone()[0]
+print("Saldo médio:", saldo_medio)
+
+cliente_max = cursor.execute("SELECT * FROM clientes WHERE saldo = (SELECT MAX(saldo) FROM clientes);").fetchone()
+print("Cliente com saldo máximo:", cliente_max)
+
+cliente_acima_1000 = cursor.execute("SELECT COUNT(*) FROM clientes WHERE saldo > 1000;").fetchone()[0]
+print("Clientes com saldo acima de 1000:", cliente_acima_1000)
+
+cursor.execute("UPDATE clientes SET saldo = 12345 WHERE id = 4;")
+
+cursor.execute("DELETE FROM clientes WHERE id = 5")
+
+cursor.execute("CREATE TABLE compras (id INTEGER PRIMARY KEY, cliente_id INTEGER, produto VARCHAR(100), valor FLOAT, FOREIGN KEY (cliente_id) REFERENCES clientes(id));")
+
+cursor.execute("INSERT INTO compras (id, cliente_id, produto, valor) VALUES (1, 1, 'Notebook', 2899.0)")
+cursor.execute("INSERT INTO compras (id, cliente_id, produto, valor) VALUES (2, 2, 'Mouse', 249.0)")
+cursor.execute("INSERT INTO compras (id, cliente_id, produto, valor) VALUES (3, 3, 'Cadeira Gamer', 578)")
+cursor.execute("INSERT INTO compras (id, cliente_id, produto, valor) VALUES (4, 4, 'MacBook Pro', 10878)")
+
+cursor.execute("SELECT clientes.nome, compras.produto, compras.valor FROM clientes JOIN compras ON clientes.id = compras.cliente_id;")
+for nome, produto, valor in cursor.fetchall():
+    print(nome, produto, valor)
+
+cursor.execute("SELECT clientes.nome, SUM(compras.valor) AS total_gasto FROM clientes JOIN compras ON clientes.id = compras.cliente_id GROUP BY clientes.nome;")
+for nome, total_gasto in cursor.fetchall():
+    print(nome, total_gasto)
+
+conexao.commit( ) 
+conexao.close ( )
