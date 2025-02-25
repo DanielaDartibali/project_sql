@@ -1,0 +1,101 @@
+import sqlite3
+
+#Connect to the database
+connection = sqlite3.connect("database")
+cursor = connection.cursor()
+
+#Create tables
+cursor.execute("CREATE TABLE students (id INT PRIMARY KEY, name VARCHAR(100), age INT, course VARCHAR(100))")
+
+#Function to insert data
+def insert_data(cursor, table, columns, values_list):
+    query = f"INSERT INTO {table} ({', '.join(columns)}) VALUES ({', '.join(['?'] * len(columns))})"
+    cursor.executemany(query, values_list)
+
+#Part 1: Inserting Students
+students = [
+    (1, 'Daniela', 21, 'Biomedicine'),
+    (2, 'Phelipe', 23, 'HR'),
+    (3, 'Marcio', 18, 'Information Technology'),
+    (4, 'Maria de Fátima', 22, 'HR'),
+    (5, 'Gislenir', 29, 'Education')
+]
+insert_data(cursor, "students", ["id", "name", "age", "course"], students)
+
+#Part 2: Queries on students
+data = cursor.execute('SELECT * FROM students;')
+for student in data:
+    print(student)
+
+students_over_20 = cursor.execute('SELECT name, age FROM students WHERE age > 20;')
+for name, age in students_over_20:
+    print(name, age)
+
+hr_students = cursor.execute("SELECT name, course FROM students WHERE course = 'HR' ORDER BY name;")
+for name, course in hr_students:
+    print(name, course)
+
+total_students = cursor.execute("SELECT COUNT(*) FROM students;")
+for count in total_students:
+    print(count)
+
+#Part 3: Updating and deleting students
+cursor.execute("UPDATE students SET age = 22 WHERE id = 2")
+cursor.execute("DELETE FROM students WHERE id = 4")
+
+#Part 4: Creating and inserting Clients
+cursor.execute("CREATE TABLE clients (id INTEGER PRIMARY KEY, name VARCHAR(100), age INT, balance FLOAT)")
+
+clients = [
+    (1, 'Daniela', 21, 3896.0),
+    (2, 'João', 28, 10789.0),
+    (3, 'Gabriel', 22, 2895.0),
+    (4, 'Phelipe', 22, 8759.0),
+    (5, 'Gislenir', 29, 4357.0)
+]
+insert_data(cursor, "clients", ["id", "name", "age", "balance"], clients)
+
+#Part 5: Queries on clients
+clients_over_30 = cursor.execute('SELECT name, age FROM clients WHERE age > 30;').fetchall()
+if not clients_over_30:
+    print("No clients over 30 years old.")
+else:
+    for name, age in clients_over_30:
+        print(name, age)
+
+average_balance = cursor.execute("SELECT AVG(balance) FROM clients;").fetchone()[0]
+print("Average balance:", average_balance)
+
+highest_balance_client = cursor.execute("SELECT * FROM clients WHERE balance = (SELECT MAX(balance) FROM clients);").fetchone()
+print("Client with the highest balance:", highest_balance_client)
+
+clients_above_1000 = cursor.execute("SELECT COUNT(*) FROM clients WHERE balance > 1000;").fetchone()[0]
+print("Clients with balance above 1000:", clients_above_1000)
+
+#Part 6: Updating and deleting clients
+cursor.execute("UPDATE clients SET balance = 12345 WHERE id = 4")
+cursor.execute("DELETE FROM clients WHERE id = 5")
+
+#Part 7: Creating and inserting Purchases
+cursor.execute("CREATE TABLE purchases (id INTEGER PRIMARY KEY, client_id INTEGER, product VARCHAR(100), price FLOAT, FOREIGN KEY (client_id) REFERENCES clients(id))")
+
+purchases = [
+    (1, 1, 'Notebook', 2899.0),
+    (2, 2, 'Mouse', 249.0),
+    (3, 3, 'Gaming Chair', 578.0),
+    (4, 4, 'MacBook Pro', 10878.0)
+]
+insert_data(cursor, "purchases", ["id", "client_id", "product", "price"], purchases)
+
+#Part 8: Queries on purchases
+cursor.execute("SELECT clients.name, purchases.product, purchases.price FROM clients JOIN purchases ON clients.id = purchases.client_id;")
+for name, product, price in cursor.fetchall():
+    print(name, product, price)
+
+cursor.execute("SELECT clients.name, SUM(purchases.price) AS total_spent FROM clients JOIN purchases ON clients.id = purchases.client_id GROUP BY clients.name;")
+for name, total_spent in cursor.fetchall():
+    print(name, total_spent)
+
+#Finalizing the database
+connection.commit()
+connection.close()
